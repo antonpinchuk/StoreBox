@@ -16,14 +16,6 @@
 
 package net.orange_box.storebox;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.preference.PreferenceManager;
-import android.util.TypedValue;
-
 import net.orange_box.storebox.adapters.StoreBoxTypeAdapter;
 import net.orange_box.storebox.annotations.method.ClearMethod;
 import net.orange_box.storebox.annotations.method.DefaultValue;
@@ -34,8 +26,6 @@ import net.orange_box.storebox.annotations.method.TypeAdapter;
 import net.orange_box.storebox.annotations.method.RegisterChangeListenerMethod;
 import net.orange_box.storebox.annotations.method.UnregisterChangeListenerMethod;
 import net.orange_box.storebox.annotations.option.SaveOption;
-import net.orange_box.storebox.enums.PreferencesMode;
-import net.orange_box.storebox.enums.PreferencesType;
 import net.orange_box.storebox.enums.SaveMode;
 import net.orange_box.storebox.handlers.ChangeListenerMethodHandler;
 import net.orange_box.storebox.handlers.MethodHandler;
@@ -52,7 +42,6 @@ import java.util.Locale;
 /**
  * This is where the magic happens...
  */
-@SuppressLint("CommitPrefEdits")
 class StoreBoxInvocationHandler implements InvocationHandler {
 
     private static final Method OBJECT_EQUALS =
@@ -62,10 +51,9 @@ class StoreBoxInvocationHandler implements InvocationHandler {
     private static final Method OBJECT_TOSTRING =
             MethodUtils.getObjectMethod("toString");
     
-    private final SharedPreferences prefs;
-    private final SharedPreferences.Editor editor;
-    private final Resources res;
-    
+    private final StoreEngine engine;
+    private final Class cls;
+
     private final SaveMode saveMode;
     
     private final MethodHandler mChangesHandler;
@@ -73,34 +61,15 @@ class StoreBoxInvocationHandler implements InvocationHandler {
     private int hashCode;
     
     public StoreBoxInvocationHandler(
-            Context context,
-            PreferencesType preferencesType,
-            String openNameValue,
-            PreferencesMode preferencesMode,
+            StoreEngine engine,
+            Class cls,
             SaveMode saveMode) {
         
-        switch (preferencesType) {
-            case ACTIVITY:
-                prefs = ((Activity) context).getPreferences(
-                        preferencesMode.value());
-                break;
-            
-            case FILE:
-                prefs = context.getSharedPreferences(
-                        openNameValue, preferencesMode.value());
-                break;
-            
-            case DEFAULT_SHARED:
-            default:
-                prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        }
-        
-        editor = prefs.edit();
-        res = context.getResources();
-        
+        this.engine = engine;
+        this.cls = cls;
         this.saveMode = saveMode;
         
-        mChangesHandler = new ChangeListenerMethodHandler(prefs);
+        mChangesHandler = new ChangeListenerMethodHandler(engine);
     }
     
     @Override
@@ -126,7 +95,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     RegisterChangeListenerMethod.class,
                     UnregisterChangeListenerMethod.class);
         } else if (method.isAnnotationPresent(KeyByResource.class)) {
-            key = res.getString(
+            key = (String) engine.getResourceString(
                     method.getAnnotation(KeyByResource.class).value());
             
             isRemove = method.isAnnotationPresent(RemoveMethod.class);
@@ -136,7 +105,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     RegisterChangeListenerMethod.class,
                     UnregisterChangeListenerMethod.class);
         } else if (method.isAnnotationPresent(RemoveMethod.class)) {
-            key = MethodUtils.getKeyForRemove(res, args);
+            key = MethodUtils.getKeyForRemove(engine, args);
             
             isRemove = true;
             isClear = false;
@@ -157,24 +126,13 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 return toString();
             }
             
-            // can we forward the method to the SharedPreferences?
+            // can we forward the method to the Engine?
             try {
-                final Method prefsMethod = prefs.getClass().getDeclaredMethod(
+                final Method prefsMethod = cls.getDeclaredMethod(
                         method.getName(),
                         method.getParameterTypes());
                 
-                return prefsMethod.invoke(prefs, args);
-            } catch (NoSuchMethodException e) {
-                // NOP
-            }
-            
-            // can we forward the method to the Editor?
-            try {
-                final Method editorMethod = editor.getClass().getDeclaredMethod(
-                        method.getName(),
-                        method.getParameterTypes());
-                
-                return editorMethod.invoke(editor, args);
+                return prefsMethod.invoke(engine, args);
             } catch (NoSuchMethodException e) {
                 // NOP
             }
@@ -196,15 +154,15 @@ class StoreBoxInvocationHandler implements InvocationHandler {
          */
         final Class<?> returnType = method.getReturnType();
         if (isRemove) {
-            editor.remove(key);
+            engine.remove(key);
         } else if (isClear) {
-            editor.clear();
+            engine.clear();
         } else if (isChange) {
             return mChangesHandler.handleInvocation(key, proxy, method, args);
         } else if (
                 returnType == Void.TYPE
                 || returnType == method.getDeclaringClass()
-                || returnType == SharedPreferences.Editor.class) {
+                || returnType == cls) {
             
             /*
              * Set.
@@ -220,7 +178,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     MethodUtils.getValueArg(args));
             
             PreferenceUtils.putValue(
-                    editor, key, adapter.getStoreType(), value);
+                    engine, key, adapter.getStoreType(), value);
         } else {
             /*
              * Get.
@@ -237,7 +195,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     args);
             
             final Object value = PreferenceUtils.getValue(
-                    prefs,
+                    engine,
                     key,
                     adapter.getStoreType(),
                     (defValue == null)
@@ -254,13 +212,13 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         } else {
             mode = saveMode;
         }
-        PreferenceUtils.saveChanges(editor, mode);
+        PreferenceUtils.saveChanges(engine, mode);
 
         // allow chaining if appropriate
         if (returnType == method.getDeclaringClass()) {
             return proxy;
-        } else if (returnType == SharedPreferences.Editor.class) {
-            return editor;
+        } else if (returnType == cls) {
+            return engine;
         } else {
             return null;
         }
@@ -284,7 +242,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
     private int internalHashCode() {
         if (hashCode == 0) {
             hashCode = Arrays.hashCode(new Object[] {
-                    prefs, editor, res, saveMode});
+                    engine, saveMode});
         }
         
         return hashCode;
@@ -302,29 +260,32 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             result = args[0];
         }
         if (result == null && method.isAnnotationPresent(DefaultValue.class)) {
-            final TypedValue value = new TypedValue();
-            res.getValue(
-                    method.getAnnotation(DefaultValue.class).value(),
-                    value,
-                    true);
-            
-            if (type == Boolean.class) {
-                result = value.data != 0;
-            } else if (type == Float.class) {
-                result = value.getFloat();
-            } else if (type == Integer.class) {
-                result = value.data;
-            } else if (type == Long.class) {
-                result = value.data;
-            } else if (type == String.class) {
-                if (value.string == null) {
-                    result = new Object(); // we'll fail later
+            final int resourceId =
+                    method.getAnnotation(DefaultValue.class).value();
+            String defType =
+                    engine.getResourceTypeName(resourceId);
+            if (type.getSimpleName().toLowerCase().equals(defType)) {
+                if (type == Boolean.class) {
+                    result = engine.getResourceBoolean(resourceId);
+                } else if (type == Float.class) {
+                    result = engine.getResourceFloat(resourceId);
+                } else if (type == Integer.class) {
+                    result = engine.getResourceInt(resourceId);
+                } else if (type == Long.class) {
+                    result = engine.getResourceLong(resourceId);
+                } else if (type == String.class) {
+                    String value = engine.getResourceString(resourceId);
+                    if (value == null) {
+                        result = new Object(); // we'll fail later
+                    } else {
+                        result = value;
+                    }
                 } else {
-                    result = value.string;
+                    throw new UnsupportedOperationException(
+                            type.getName() + " not supported as a resource default");
                 }
             } else {
-                throw new UnsupportedOperationException(
-                        type.getName() + " not supported as a resource default");
+                result = new Object(); // we'll fail later
             }
         }
         

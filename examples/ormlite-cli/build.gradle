@@ -8,5 +8,5 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 dependencies {
-    compile 'net.jodah:typetools:0.4.6'
+    compile project(':storebox-lib')
 }

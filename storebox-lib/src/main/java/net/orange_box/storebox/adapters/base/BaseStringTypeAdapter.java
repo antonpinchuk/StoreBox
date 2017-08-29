@@ -16,8 +16,6 @@
 
 package net.orange_box.storebox.adapters.base;
 
-import android.support.annotation.Nullable;
-
 import net.orange_box.storebox.adapters.StoreBoxTypeAdapter;
 import net.orange_box.storebox.adapters.StoreType;
 
@@ -35,17 +33,14 @@ public abstract class BaseStringTypeAdapter<T> implements
         return StoreType.STRING;
     }
 
-    @Nullable
     @Override
     public String getDefaultValue() {
         return null;
     }
 
-    @Nullable
     @Override
-    public abstract String adaptForPreferences(@Nullable T value);
+    public abstract String adaptForPreferences(T value);
 
-    @Nullable
     @Override
-    public abstract T adaptFromPreferences(@Nullable String value);
+    public abstract T adaptFromPreferences(String value);
 }

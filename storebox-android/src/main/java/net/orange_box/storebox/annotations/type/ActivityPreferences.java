@@ -16,6 +16,7 @@
 
 package net.orange_box.storebox.annotations.type;
 
+import net.orange_box.storebox.StoreBoxSE;
 import net.orange_box.storebox.enums.PreferencesMode;
 
 import java.lang.annotation.ElementType;
@@ -29,7 +30,7 @@ import java.lang.annotation.Target;
  * <p>
  * When this annotation is used an {@link android.app.Activity} context needs
  * to be passed in when instantiating the interface using
- * {@link net.orange_box.storebox.StoreBox}.
+ * {@link StoreBoxSE}.
  * 
  * @see net.orange_box.storebox.enums.PreferencesType#ACTIVITY
  * @see android.app.Activity#getPreferences(int)

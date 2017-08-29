@@ -56,13 +56,15 @@ public class ChainingMethodsTestCase extends InstrumentationTestCase {
     
     @SmallTest
     public void testChainingSetMethods() {
-        assertTrue(uut.setFirstValue("one") instanceof SharedPreferences.Editor);
+        // SharedPreferences are now out of StoreBox, so we can't chain
+        //assertTrue(uut.setFirstValue("one") instanceof SharedPreferences.Editor);
         assertSame(uut, uut.setSecondValue("two"));
     }
 
     @SmallTest
     public void testChainingRemoveMethods() {
-        assertTrue(uut.removeFirstValue() instanceof SharedPreferences.Editor);
+        // SharedPreferences are now out of StoreBox, so we can't chain
+        //assertTrue(uut.removeFirstValue() instanceof SharedPreferences.Editor);
         assertSame(uut, uut.removeSecondValue());
     }
 }

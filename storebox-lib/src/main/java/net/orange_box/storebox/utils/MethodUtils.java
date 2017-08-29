@@ -16,7 +16,7 @@
 
 package net.orange_box.storebox.utils;
 
-import android.content.res.Resources;
+import net.orange_box.storebox.StoreEngine;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -35,7 +35,7 @@ public final class MethodUtils {
         return false;
     }
     
-    public static String getKeyForRemove(Resources res, Object... args) {
+    public static String getKeyForRemove(StoreEngine engine, Object... args) {
         if (args != null && args.length > 0) {
             final Object value = args[0];
             final Class<?> type = TypeUtils.wrapToBoxedType(value.getClass());
@@ -43,7 +43,7 @@ public final class MethodUtils {
             if (type == String.class) {
                 return (String) value;
             } else if (type == Integer.class) {
-                return res.getString((int) value);
+                return (String) engine.getResourceString((int) value);
             } else {
                 throw new UnsupportedOperationException(
                         "Only String or int supported for remove method");

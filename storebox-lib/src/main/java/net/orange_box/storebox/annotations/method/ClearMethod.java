@@ -16,8 +16,6 @@
 
 package net.orange_box.storebox.annotations.method;
 
-import android.content.SharedPreferences;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,8 +24,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation which should be used for a clear method, for removing all values
  * from the preferences.
- *
- * @see SharedPreferences.Editor#clear()
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

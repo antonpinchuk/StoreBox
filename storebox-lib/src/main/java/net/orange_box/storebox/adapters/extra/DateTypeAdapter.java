@@ -16,8 +16,6 @@
 
 package net.orange_box.storebox.adapters.extra;
 
-import android.support.annotation.Nullable;
-
 import net.orange_box.storebox.adapters.base.BaseLongTypeAdapter;
 
 import java.util.Date;
@@ -35,7 +33,7 @@ public class DateTypeAdapter extends BaseLongTypeAdapter<Date> {
     }
 
     @Override
-    public Long adaptForPreferences(@Nullable Date value) {
+    public Long adaptForPreferences(Date value) {
         if (value == null) {
             return Long.MIN_VALUE;
         }
@@ -43,7 +41,6 @@ public class DateTypeAdapter extends BaseLongTypeAdapter<Date> {
         return value.getTime();
     }
 
-    @Nullable
     @Override
     public Date adaptFromPreferences(Long value) {
         if (value == Long.MIN_VALUE) {

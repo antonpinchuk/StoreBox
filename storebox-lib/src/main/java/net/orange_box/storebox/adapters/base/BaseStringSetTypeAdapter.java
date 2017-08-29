@@ -16,10 +16,6 @@
 
 package net.orange_box.storebox.adapters.base;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-import android.support.annotation.Nullable;
-
 import net.orange_box.storebox.adapters.StoreBoxTypeAdapter;
 import net.orange_box.storebox.adapters.StoreType;
 
@@ -32,7 +28,6 @@ import java.util.Set;
  * 
  * @param <T> type which needs to be adapted
  */
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public abstract class BaseStringSetTypeAdapter<T> implements
         StoreBoxTypeAdapter<T, Set<String>> {
     
@@ -41,17 +36,14 @@ public abstract class BaseStringSetTypeAdapter<T> implements
         return StoreType.STRING_SET;
     }
 
-    @Nullable
     @Override
     public Set<String> getDefaultValue() {
         return null;
     }
 
-    @Nullable
     @Override
-    public abstract Set<String> adaptForPreferences(@Nullable T value);
+    public abstract Set<String> adaptForPreferences(T value);
 
-    @Nullable
     @Override
-    public abstract T adaptFromPreferences(@Nullable Set<String> value);
+    public abstract T adaptFromPreferences(Set<String> value);
 }

@@ -16,15 +16,14 @@
 
 package net.orange_box.storebox.handlers;
 
-import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
-
 import net.jodah.typetools.TypeResolver;
+import net.orange_box.storebox.StoreEngine;
 import net.orange_box.storebox.adapters.StoreBoxTypeAdapter;
 import net.orange_box.storebox.annotations.method.RegisterChangeListenerMethod;
 import net.orange_box.storebox.annotations.method.UnregisterChangeListenerMethod;
 import net.orange_box.storebox.annotations.method.TypeAdapter;
 import net.orange_box.storebox.listeners.OnPreferenceValueChangedListener;
+import net.orange_box.storebox.listeners.OnSharedPreferenceChangeListener;
 import net.orange_box.storebox.utils.PreferenceUtils;
 import net.orange_box.storebox.utils.TypeUtils;
 
@@ -43,17 +42,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ChangeListenerMethodHandler implements
         MethodHandler,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        OnSharedPreferenceChangeListener {
     
-    private final SharedPreferences prefs;
+    private final StoreEngine engine;
     private final Map<String, Set<ListenerInfo>> listeners;
     
-    public ChangeListenerMethodHandler(SharedPreferences prefs) {
-        this.prefs = prefs;
+    public ChangeListenerMethodHandler(StoreEngine engine) {
+        this.engine = engine;
 
         listeners = new ConcurrentHashMap<>();
-        
-        prefs.registerOnSharedPreferenceChangeListener(this);
+
+        engine.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -110,7 +109,7 @@ public class ChangeListenerMethodHandler implements
 
     @Override
     public void onSharedPreferenceChanged(
-            SharedPreferences sharedPreferences, 
+            StoreEngine engine,
             String key) {
         
         final Set<ListenerInfo> listeners = this.listeners.get(key);
@@ -121,7 +120,7 @@ public class ChangeListenerMethodHandler implements
                 final StoreBoxTypeAdapter adapter = listenerInfo.getAdapter();
 
                 final Object newValue = PreferenceUtils.getValue(
-                        prefs,
+                        engine,
                         key,
                         adapter.getStoreType(),
                         adapter.getDefaultValue());
@@ -155,7 +154,6 @@ public class ChangeListenerMethodHandler implements
             hashCode = listener.hashCode();
         }
         
-        @Nullable
         public OnPreferenceValueChangedListener getListener() {
             return listener.get();
         }

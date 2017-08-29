@@ -17,15 +17,14 @@
 package net.orange_box.storebox.adapters.extra;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
 
 import net.orange_box.storebox.adapters.base.BaseStringTypeAdapter;
+import net.orange_box.storebox.utils.TypeUtils;
 
 public class UriTypeAdapter extends BaseStringTypeAdapter<Uri> {
 
-    @Nullable
     @Override
-    public String adaptForPreferences(@Nullable Uri value) {
+    public String adaptForPreferences(Uri value) {
         if (value == null) {
             return null;
         }
@@ -33,9 +32,8 @@ public class UriTypeAdapter extends BaseStringTypeAdapter<Uri> {
         return value.toString();
     }
 
-    @Nullable
     @Override
-    public Uri adaptFromPreferences(@Nullable String value) {
+    public Uri adaptFromPreferences(String value) {
         if (value == null) {
             return null;
         }

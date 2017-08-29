@@ -1,4 +1,7 @@
 include ':storebox-lib'
+include ':storebox-android'
 include ':storebox-harness'
 include ':example-proguard'
 project(':example-proguard').projectDir = file('examples/proguard')
+include ':example-ormlite'
+project(':example-ormlite').projectDir = file('examples/ormlite-cli')

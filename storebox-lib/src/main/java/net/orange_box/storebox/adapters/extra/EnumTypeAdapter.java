@@ -16,8 +16,6 @@
 
 package net.orange_box.storebox.adapters.extra;
 
-import android.support.annotation.Nullable;
-
 import net.orange_box.storebox.adapters.base.BaseStringTypeAdapter;
 
 public class EnumTypeAdapter extends BaseStringTypeAdapter<Enum> {
@@ -28,9 +26,8 @@ public class EnumTypeAdapter extends BaseStringTypeAdapter<Enum> {
         this.type = type;
     }
 
-    @Nullable
     @Override
-    public String adaptForPreferences(@Nullable Enum value) {
+    public String adaptForPreferences(Enum value) {
         if (value == null) {
             return null;
         }
@@ -38,9 +35,8 @@ public class EnumTypeAdapter extends BaseStringTypeAdapter<Enum> {
         return value.name();
     }
 
-    @Nullable
     @Override
-    public Enum adaptFromPreferences(@Nullable String value) {
+    public Enum adaptFromPreferences(String value) {
         if (value == null) {
             return null;
         }

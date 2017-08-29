@@ -18,15 +18,15 @@ package net.orange_box.storebox.adapters.standard;
 
 import net.orange_box.storebox.adapters.base.BaseFloatTypeAdapter;
 
-public class FloatTypeAdapter extends BaseFloatTypeAdapter<Float> {
+public class Float extends BaseFloatTypeAdapter<java.lang.Float> {
 
     @Override
-    public Float adaptForPreferences(Float value) {
+    public java.lang.Float adaptForPreferences(java.lang.Float value) {
         return value;
     }
 
     @Override
-    public Float adaptFromPreferences(Float value) {
+    public java.lang.Float adaptFromPreferences(java.lang.Float value) {
         return value;
     }
 }

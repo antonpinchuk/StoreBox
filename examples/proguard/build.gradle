@@ -41,5 +41,5 @@ android {
 }
 
 dependencies {
-    compile project(':storebox-lib')
+    compile project(':storebox-android')
 }
