@@ -22,16 +22,34 @@ import net.orange_box.storebox.harness.R;
 import java.util.Set;
 
 public interface ValueTypesInterface {
-    
+
     @KeyByResource(R.string.key_boolean)
     boolean getBoolean();
-    
+
+    @KeyByResource(R.string.key_boolean)
+    boolean getBoolean(boolean defValue);
+
+    @KeyByResource(R.string.key_boolean)
+    Boolean getBooleanObj();
+
+    @KeyByResource(R.string.key_boolean)
+    Boolean getBooleanObj(Boolean defVal);
+
     @KeyByResource(R.string.key_boolean)
     void setBoolean(boolean value);
 
 
     @KeyByResource(R.string.key_float)
     float getFloat();
+
+    @KeyByResource(R.string.key_float)
+    float getFloat(float defValue);
+
+    @KeyByResource(R.string.key_float)
+    Float getFloatObj();
+
+    @KeyByResource(R.string.key_float)
+    Float getFloatObj(Float defVal);
 
     @KeyByResource(R.string.key_float)
     void setFloat(float value);

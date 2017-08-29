@@ -60,16 +60,22 @@ public class ValueTypesTestCase extends InstrumentationTestCase {
     
     @SmallTest
     public void testBoolean() {
+        assertTrue(uut.getBoolean(true));
         assertFalse(uut.getBoolean());
-        
+        assertFalse(uut.getBooleanObj());
+        assertFalse(uut.getBooleanObj(null)); // TODO: return null as default value
+
         uut.setBoolean(true);
         assertTrue(uut.getBoolean());
     }
 
     @SmallTest
     public void testFloat() {
+        assertEquals(1.0F, uut.getFloat(1.0F));
         assertEquals(0F, uut.getFloat());
-        
+        assertEquals(0F, uut.getFloatObj());
+        assertEquals(0F, uut.getFloatObj(null)); // TODO: return null as default value
+
         uut.setFloat(1.0F);
         assertEquals(1.0F, uut.getFloat());
     }

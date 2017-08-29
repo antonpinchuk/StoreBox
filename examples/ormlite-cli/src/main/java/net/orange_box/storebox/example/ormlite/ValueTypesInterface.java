@@ -21,16 +21,34 @@ import net.orange_box.storebox.annotations.method.KeyByString;
 import java.util.Set;
 
 public interface ValueTypesInterface {
-    
+
     @KeyByString("boolean")
-    Boolean getBoolean();
-    
+    boolean getBoolean();
+
     @KeyByString("boolean")
-    void setBoolean(Boolean value);
+    boolean getBoolean(boolean defValue);
+
+    @KeyByString("boolean")
+    Boolean getBooleanObj();
+
+    @KeyByString("boolean")
+    Boolean getBooleanObj(Boolean defValue);
+
+    @KeyByString("boolean")
+    void setBoolean(boolean value);
 
 
     @KeyByString("float")
     float getFloat();
+
+    @KeyByString("float")
+    float getFloat(float defValue);
+
+    @KeyByString("float")
+    Float getFloatObj();
+
+    @KeyByString("float")
+    Float getFloatObj(Float defValue);
 
     @KeyByString("float")
     void setFloat(float value);
@@ -38,6 +56,15 @@ public interface ValueTypesInterface {
 
     @KeyByString("int")
     int getInt();
+
+    @KeyByString("int")
+    int getInt(int defValue);
+
+    @KeyByString("int")
+    Integer getIntObj();
+
+    @KeyByString("int")
+    Integer getIntObj(Integer defValue);
 
     @KeyByString("int")
     void setInt(int value);
@@ -52,6 +79,9 @@ public interface ValueTypesInterface {
 
     @KeyByString("string")
     String getString();
+
+    @KeyByString("string")
+    String getString(String defValue);
 
     @KeyByString("string")
     void setString(String value);
