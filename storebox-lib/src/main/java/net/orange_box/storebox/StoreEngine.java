@@ -1,7 +1,6 @@
 package net.orange_box.storebox;
 
-
-import net.orange_box.storebox.adapters.standard.Float;
+import net.orange_box.storebox.enums.SaveMode;
 import net.orange_box.storebox.handlers.ChangeListenerMethodHandler;
 
 import java.util.Set;
@@ -9,27 +8,25 @@ import java.util.Set;
 public interface StoreEngine {
 
     Boolean getBoolean(String key, Boolean defaultValue);
-    java.lang.Float getFloat(String key, java.lang.Float defaultValue);
+    Float getFloat(String key, Float defaultValue);
     Integer getInt(String key, Integer defaultValue);
     Long getLong(String key, Long defaultValue);
     String getString(String key, String defaultValue);
     Set<String> getStringSet(String key, Set<String> defaultValue);
 
-    void putBoolean(String key, Boolean value);
-    void putFloat(String key, java.lang.Float value);
-    void putInt(String key, Integer value);
-    void putLong(String key, Long value);
-    void putString(String key, String value);
-    void putStringSet(String key, Set<String> value);
+    void putBoolean(String key, Boolean value, SaveMode mode);
+    void putFloat(String key, Float value, SaveMode mode);
+    void putInt(String key, Integer value, SaveMode mode);
+    void putLong(String key, Long value, SaveMode mode);
+    void putString(String key, String value, SaveMode mode);
+    void putStringSet(String key, Set<String> value, SaveMode mode);
 
-    void remove(String key);
-    void clear();
+    void remove(String key, SaveMode mode);
+    void clear(SaveMode mode);
 
-    void apply();
-    void commit();
-
+    // Android Resource callbacks for backward compatibility
     Boolean getResourceBoolean(int resourceId);
-    java.lang.Float getResourceFloat(int resourceId);
+    Float getResourceFloat(int resourceId);
     Integer getResourceInt(int resourceId);
     Long getResourceLong(int resourceId);
     String getResourceString(int resourceId);

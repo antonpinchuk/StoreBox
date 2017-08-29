@@ -62,31 +62,32 @@ public final class PreferenceUtils {
             StoreEngine engine,
             String key,
             StoreType type,
-            Object value) {
+            Object value,
+            SaveMode mode) {
         
         switch (type) {
             case BOOLEAN:
-                engine.putBoolean(key, (Boolean) value);
+                engine.putBoolean(key, (Boolean) value, mode);
                 break;
             
             case FLOAT:
-                engine.putFloat(key, (Float) value);
+                engine.putFloat(key, (Float) value, mode);
                 break;
             
             case INTEGER:
-                engine.putInt(key, (Integer) value);
+                engine.putInt(key, (Integer) value, mode);
                 break;
             
             case LONG:
-                engine.putLong(key, (Long) value);
+                engine.putLong(key, (Long) value, mode);
                 break;
             
             case STRING:
-                engine.putString(key, (String) value);
+                engine.putString(key, (String) value, mode);
                 break;
 
             case STRING_SET:
-                engine.putStringSet(key, (Set<String>) value);
+                engine.putStringSet(key, (Set<String>) value, mode);
                 break;
 
             default:
@@ -97,24 +98,24 @@ public final class PreferenceUtils {
         }
     }
     
-    public static void saveChanges(
-            StoreEngine engine,
-            SaveMode mode) {
-        
-        switch (mode) {
-            case APPLY:
-                engine.apply();
-                break;
-
-            case COMMIT:
-                engine.commit();
-                break;
-
-            case NOME:
-            default:
-                // NOP
-        }
-    }
+    //public static void saveChanges(
+    //        StoreEngine engine,
+    //        SaveMode mode) {
+    //
+    //    switch (mode) {
+    //        case APPLY:
+    //            engine.apply();
+    //            break;
+    //
+    //        case COMMIT:
+    //            engine.commit();
+    //            break;
+    //
+    //        case NOME:
+    //        default:
+    //            // NOP
+    //    }
+    //}
     
     private PreferenceUtils() {}
 }

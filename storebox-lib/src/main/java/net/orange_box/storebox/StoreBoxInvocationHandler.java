@@ -146,7 +146,15 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     KeyByString.class.getSimpleName(),
                     KeyByResource.class.getSimpleName()));
         }
-        
+
+        // method-level strategy > class-level strategy
+        final SaveMode mode;
+        if (method.isAnnotationPresent(SaveOption.class)) {
+            mode = method.getAnnotation(SaveOption.class).value();
+        } else {
+            mode = saveMode;
+        }
+
         /*
          * Find out based on the method return type whether it's a get or set
          * operation. We could provide a further annotation for get/set methods,
@@ -154,9 +162,9 @@ class StoreBoxInvocationHandler implements InvocationHandler {
          */
         final Class<?> returnType = method.getReturnType();
         if (isRemove) {
-            engine.remove(key);
+            engine.remove(key, mode);
         } else if (isClear) {
-            engine.clear();
+            engine.clear(mode);
         } else if (isChange) {
             return mChangesHandler.handleInvocation(key, proxy, method, args);
         } else if (
@@ -178,7 +186,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     MethodUtils.getValueArg(args));
             
             PreferenceUtils.putValue(
-                    engine, key, adapter.getStoreType(), value);
+                    engine, key, adapter.getStoreType(), value, mode);
         } else {
             /*
              * Get.
@@ -205,14 +213,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             return adapter.adaptFromPreferences(value);
         }
 
-        // method-level strategy > class-level strategy
-        final SaveMode mode;
-        if (method.isAnnotationPresent(SaveOption.class)) {
-            mode = method.getAnnotation(SaveOption.class).value();
-        } else {
-            mode = saveMode;
-        }
-        PreferenceUtils.saveChanges(engine, mode);
+        //PreferenceUtils.saveChanges(engine, mode);
 
         // allow chaining if appropriate
         if (returnType == method.getDeclaringClass()) {

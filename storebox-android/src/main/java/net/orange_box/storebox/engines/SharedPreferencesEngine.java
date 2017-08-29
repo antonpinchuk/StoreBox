@@ -2,14 +2,12 @@ package net.orange_box.storebox.engines;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
 
 import net.orange_box.storebox.StoreEngine;
-import net.orange_box.storebox.adapters.extra.DoubleTypeAdapter;
-import net.orange_box.storebox.adapters.standard.Float;
+import net.orange_box.storebox.enums.SaveMode;
 import net.orange_box.storebox.handlers.ChangeListenerMethodHandler;
 
 import java.util.Set;
@@ -69,55 +67,53 @@ public class SharedPreferencesEngine implements StoreEngine {
     }
 
     @Override
-    public void putBoolean(String key, Boolean value) {
+    public void putBoolean(String key, Boolean value, SaveMode mode) {
         editor.putBoolean(key, value);
+        commitOrApply(mode);
     }
 
     @Override
-    public void putFloat(String key, java.lang.Float value) {
+    public void putFloat(String key, Float value, SaveMode mode) {
         editor.putFloat(key, value);
+        commitOrApply(mode);
     }
 
     @Override
-    public void putInt(String key, Integer value) {
+    public void putInt(String key, Integer value, SaveMode mode) {
         editor.putInt(key, value);
+        commitOrApply(mode);
     }
 
     @Override
-    public void putLong(String key, Long value) {
+    public void putLong(String key, Long value, SaveMode mode) {
         editor.putLong(key, value);
+        commitOrApply(mode);
     }
 
     @Override
-    public void putString(String key, String value) {
+    public void putString(String key, String value, SaveMode mode) {
         editor.putString(key, value);
+        commitOrApply(mode);
    }
 
     @Override
-    public void putStringSet(String key, Set<String> value) {
+    public void putStringSet(String key, Set<String> value, SaveMode mode) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             editor.putStringSet(key, value);
+            commitOrApply(mode);
         }
     }
 
     @Override
-    public void remove(String key) {
+    public void remove(String key, SaveMode mode) {
         editor.remove(key);
+        commitOrApply(mode);
     }
 
     @Override
-    public void clear() {
+    public void clear(SaveMode mode) {
         editor.clear();
-    }
-
-    @Override
-    public void apply() {
-        editor.apply();
-    }
-
-    @Override
-    public void commit() {
-        editor.commit();
+        commitOrApply(mode);
     }
 
     @Override
@@ -163,6 +159,14 @@ public class SharedPreferencesEngine implements StoreEngine {
                 changeHandler.onSharedPreferenceChanged(SharedPreferencesEngine.this, s);
             }
         });
+    }
+
+    private void commitOrApply(SaveMode mode) {
+        if (mode == SaveMode.APPLY) {
+            editor.apply();
+        } else if (mode == SaveMode.COMMIT) {
+            editor.commit();
+        }
     }
 
 }

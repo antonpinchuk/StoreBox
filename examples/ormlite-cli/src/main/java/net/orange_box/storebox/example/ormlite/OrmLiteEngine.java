@@ -1,6 +1,7 @@
 package net.orange_box.storebox.example.ormlite;
 
 import net.orange_box.storebox.StoreEngine;
+import net.orange_box.storebox.enums.SaveMode;
 import net.orange_box.storebox.handlers.ChangeListenerMethodHandler;
 
 import java.util.HashMap;
@@ -40,53 +41,43 @@ public class OrmLiteEngine implements StoreEngine {
     }
 
     @Override
-    public void putBoolean(String key, Boolean value) {
+    public void putBoolean(String key, Boolean value, SaveMode mode) {
         storageStub.put(key, value);
     }
 
     @Override
-    public void putFloat(String key, Float value) {
+    public void putFloat(String key, Float value, SaveMode mode) {
         storageStub.put(key, value);
     }
 
     @Override
-    public void putInt(String key, Integer value) {
+    public void putInt(String key, Integer value, SaveMode mode) {
         storageStub.put(key, value);
     }
 
     @Override
-    public void putLong(String key, Long value) {
+    public void putLong(String key, Long value, SaveMode mode) {
         storageStub.put(key, value);
     }
 
     @Override
-    public void putString(String key, String value) {
+    public void putString(String key, String value, SaveMode mode) {
         storageStub.put(key, value);
     }
 
     @Override
-    public void putStringSet(String key, Set<String> value) {
+    public void putStringSet(String key, Set<String> value, SaveMode mode) {
         storageStub.put(key, value);
     }
 
     @Override
-    public void remove(String key) {
-
+    public void remove(String key, SaveMode mode) {
+        storageStub.remove(key);
     }
 
     @Override
-    public void clear() {
-
-    }
-
-    @Override
-    public void apply() {
-
-    }
-
-    @Override
-    public void commit() {
-
+    public void clear(SaveMode mode) {
+        storageStub.clear();
     }
 
     @Override
