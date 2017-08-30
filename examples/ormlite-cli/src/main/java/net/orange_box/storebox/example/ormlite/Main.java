@@ -1,13 +1,14 @@
 package net.orange_box.storebox.example.ormlite;
 
 import net.orange_box.storebox.StoreBoxSE;
+import net.orange_box.storebox.engines.HashMapEngine;
 
 public class Main {
 
     private static ValueTypesInterface uut;
 
     public static void main (String[] argc) {
-        uut = StoreBoxSE.create(new OrmLiteEngine(), ValueTypesInterface.class);
+        uut = StoreBoxSE.create(new HashMapEngine(), ValueTypesInterface.class);
 
         System.out.println("TODO");
 
