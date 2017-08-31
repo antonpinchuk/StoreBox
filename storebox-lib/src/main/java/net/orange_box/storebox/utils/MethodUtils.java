@@ -56,7 +56,7 @@ public final class MethodUtils {
 
     public static Object getValueArg(Object... args) {
         if (args != null && args.length > 0) {
-            return args[0];
+            return args[args.length-1];
         } else {
             throw new UnsupportedOperationException(
                     "Value argument not found");

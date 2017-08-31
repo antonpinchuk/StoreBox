@@ -21,6 +21,7 @@ import net.orange_box.storebox.annotations.method.ClearMethod;
 import net.orange_box.storebox.annotations.method.DefaultValue;
 import net.orange_box.storebox.annotations.method.KeyByResource;
 import net.orange_box.storebox.annotations.method.KeyByString;
+import net.orange_box.storebox.annotations.method.KeyByFormattedString;
 import net.orange_box.storebox.annotations.method.RemoveMethod;
 import net.orange_box.storebox.annotations.method.TypeAdapter;
 import net.orange_box.storebox.annotations.method.RegisterChangeListenerMethod;
@@ -32,6 +33,8 @@ import net.orange_box.storebox.handlers.MethodHandler;
 import net.orange_box.storebox.utils.MethodUtils;
 import net.orange_box.storebox.utils.PreferenceUtils;
 import net.orange_box.storebox.utils.TypeUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -82,12 +85,25 @@ class StoreBoxInvocationHandler implements InvocationHandler {
          * the SharedPreferences or Editor implementations.
          */
         final String key;
+        final int numberOfFormattedKeyArgs;
         final boolean isRemove;
         final boolean isClear;
         final boolean isChange;
         if (method.isAnnotationPresent(KeyByString.class)) {
             key = method.getAnnotation(KeyByString.class).value();
-            
+
+            numberOfFormattedKeyArgs = 0;
+            isRemove = method.isAnnotationPresent(RemoveMethod.class);
+            isClear = false;
+            isChange = MethodUtils.areAnyAnnotationsPresent(
+                    method,
+                    RegisterChangeListenerMethod.class,
+                    UnregisterChangeListenerMethod.class);
+        } else if (method.isAnnotationPresent(KeyByFormattedString.class)) {
+            String keyFormat = method.getAnnotation(KeyByFormattedString.class).value();
+            numberOfFormattedKeyArgs = StringUtils.countMatches(keyFormat, "%");
+            key = String.format(keyFormat, args);
+
             isRemove = method.isAnnotationPresent(RemoveMethod.class);
             isClear = false;
             isChange = MethodUtils.areAnyAnnotationsPresent(
@@ -97,7 +113,8 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         } else if (method.isAnnotationPresent(KeyByResource.class)) {
             key = (String) engine.getResourceString(
                     method.getAnnotation(KeyByResource.class).value());
-            
+
+            numberOfFormattedKeyArgs = 0;
             isRemove = method.isAnnotationPresent(RemoveMethod.class);
             isClear = false;
             isChange = MethodUtils.areAnyAnnotationsPresent(
@@ -106,13 +123,15 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     UnregisterChangeListenerMethod.class);
         } else if (method.isAnnotationPresent(RemoveMethod.class)) {
             key = MethodUtils.getKeyForRemove(engine, args);
-            
+
+            numberOfFormattedKeyArgs = 0;
             isRemove = true;
             isClear = false;
             isChange = false;
         } else if (method.isAnnotationPresent(ClearMethod.class)) {
             key = null;
-            
+
+            numberOfFormattedKeyArgs = 0;
             isRemove = false;
             isClear = true;
             isChange = false;
@@ -200,6 +219,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             
             final Object defValue = getDefaultValueArg(
                     method,
+                    numberOfFormattedKeyArgs,
                     args);
             
             final Object value = PreferenceUtils.getValue(
@@ -251,14 +271,15 @@ class StoreBoxInvocationHandler implements InvocationHandler {
     
     private Object getDefaultValueArg(
             Method method,
+            int numberOfFormattedKeyArgs,
             Object... args) {
         
         Object result = null;
         final Class<?> type = TypeUtils.wrapToBoxedType(method.getReturnType());
         
         // parameter default > method-level default
-        if (args != null && args.length > 0) {
-            result = args[0];
+        if (args != null && args.length > numberOfFormattedKeyArgs) {
+            result = args[args.length-1];
         }
         if (result == null && method.isAnnotationPresent(DefaultValue.class)) {
             final int resourceId =
