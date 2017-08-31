@@ -6,14 +6,14 @@ apply plugin: 'com.jfrog.bintray'
 android {
     compileSdkVersion project.compileSdkVersion
     buildToolsVersion project.buildToolsVersion
-    
+
     defaultConfig {
         minSdkVersion    project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        
+
         versionName project.versionName
     }
-    
+
     buildTypes {
         debug {
             testCoverageEnabled true
@@ -24,6 +24,7 @@ android {
 dependencies {
     compile 'com.android.support:support-annotations:23.3.0'
     compile 'net.jodah:typetools:0.4.6'
+    compile 'org.apache.commons:commons-lang3:3.5'
 }
 
 // FindBugs
@@ -71,7 +72,7 @@ install {
         pom {
             project {
                 packaging 'jar'
-                
+
                 name 'StroreBox Android Library'
                 description 'Android library for streamlining SharedPreferences.'
                 url 'http://martino2k6.github.io/StoreBox'
@@ -127,16 +128,16 @@ bintray {
 
     configurations = ['archives']
     publish = true
-    
+
     pkg {
         repo = 'maven'
         name = 'storebox'
         desc = 'Android library for streamlining SharedPreferences.'
-        
+
         websiteUrl = 'http://martino2k6.github.io/StoreBox'
         issueTrackerUrl = 'https://github.com/martino2k6/StoreBox/issues'
         vcsUrl = 'https://github.com/martino2k6/StoreBox.git'
-        
+
         licenses = ['Apache-2.0']
         labels = ['android', 'preferences', 'library', 'jar']
         publicDownloadNumbers = true
@@ -144,7 +145,7 @@ bintray {
         version {
             name = project.versionName
             vcsTag = project.versionName
-            
+
             gpg {
                 sign = true
                 passphrase = properties.getProperty('bintray.gpg.password')
