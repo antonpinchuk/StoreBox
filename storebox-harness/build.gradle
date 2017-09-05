@@ -48,7 +48,7 @@ dependencies {
     compile project(':storebox-android')
     
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'com.google.code.gson:gson:2.6.2'
+    compile 'com.google.code.gson:gson:2.7'
     
     androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
