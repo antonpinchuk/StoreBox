@@ -37,7 +37,7 @@ public final class MethodUtils {
     
     public static String getKeyForRemove(StoreEngine engine, Object... args) {
         if (args != null && args.length > 0) {
-            final Object value = args[0];
+            final Object value = args[args.length-1];
             final Class<?> type = TypeUtils.wrapToBoxedType(value.getClass());
             
             if (type == String.class) {
@@ -66,7 +66,7 @@ public final class MethodUtils {
     public static Class<?> getValueParameterType(Method method) {
         final Class<?>[] types = method.getParameterTypes();
         if (types != null && types.length > 0) {
-            return TypeUtils.wrapToBoxedType(types[0]);
+            return TypeUtils.wrapToBoxedType(types[types.length-1]);
         } else {
             throw new UnsupportedOperationException(
                     "Value parameter type not found");
