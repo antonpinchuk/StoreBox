@@ -1,12 +1,13 @@
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
     }
     
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }
 
@@ -25,10 +26,10 @@ ext {
     minSdkVersion = 10
     targetSdkVersion = 23
     
-    sourceCompatibilityVersion = JavaVersion.VERSION_1_6
-    targetCompatibilityVersion = JavaVersion.VERSION_1_6
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
+    targetCompatibilityVersion = JavaVersion.VERSION_1_7
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.12'
+    gradleVersion = '3.3'
 }
