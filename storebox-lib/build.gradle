@@ -34,7 +34,7 @@ findbugs {
     ignoreFailures = true
 }
 
-task findbugs(type: FindBugs, dependsOn: assembleDebug) {
+task findbugs(type: FindBugs, dependsOn: 'assembleDebug') {
     description 'Run findbugs'
     group 'verification'
 
