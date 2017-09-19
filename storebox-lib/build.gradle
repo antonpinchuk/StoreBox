@@ -19,10 +19,11 @@ android {
             testCoverageEnabled true
         }
     }
+    buildToolsVersion '25.0.3'
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:23.3.0'
+    compile 'com.android.support:support-annotations:23.4.0'
     compile 'net.jodah:typetools:0.4.6'
 }
 
@@ -33,7 +34,7 @@ findbugs {
     ignoreFailures = true
 }
 
-task findbugs(type: FindBugs, dependsOn: assembleDebug) {
+task findbugs(type: FindBugs, dependsOn: 'assembleDebug') {
     description 'Run findbugs'
     group 'verification'
 
