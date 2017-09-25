@@ -17,13 +17,16 @@ import java.util.Set;
  */
 public class SharedPreferencesEngine implements StoreEngine {
 
+    public SharedPreferences getPrefs() {
+        return prefs;
+    }
+
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
     Context context;
 
     public SharedPreferencesEngine(Context context) {
         this.context = context;
-        setSharedPreferences(PreferenceManager.getDefaultSharedPreferences(context));
     }
 
     public void setSharedPreferences(SharedPreferences preferences) {

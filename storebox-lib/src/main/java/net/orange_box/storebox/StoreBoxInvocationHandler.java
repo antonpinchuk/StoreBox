@@ -125,26 +125,9 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             } else if (method.equals(OBJECT_TOSTRING)) {
                 return toString();
             }
-            
-            // can we forward the method to the Engine?
-            try {
-                final Method prefsMethod = cls.getDeclaredMethod(
-                        method.getName(),
-                        method.getParameterTypes());
-                
-                return prefsMethod.invoke(engine, args);
-            } catch (NoSuchMethodException e) {
-                // NOP
-            }
-            
-            // fail fast, rather than ignoring the method invocation
-            throw new UnsupportedOperationException(String.format(
-                    Locale.ENGLISH,
-                    "Failed to invoke %1$s method, " +
-                            "perhaps the %2$s or %3$s annotation is missing?",
-                    method.getName(),
-                    KeyByString.class.getSimpleName(),
-                    KeyByResource.class.getSimpleName()));
+
+            forwardMethod(engine, method, args);
+            return null;
         }
 
         // method-level strategy > class-level strategy
@@ -223,6 +206,18 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         } else {
             return null;
         }
+    }
+
+    public Object forwardMethod(StoreEngine engine, Method method, Object... arg) {
+
+        // fail fast, rather than ignoring the method invocation
+        throw new UnsupportedOperationException(String.format(
+                Locale.ENGLISH,
+                "Failed to invoke %1$s method, " +
+                        "perhaps the %2$s or %3$s annotation is missing?",
+                method.getName(),
+                KeyByString.class.getSimpleName(),
+                KeyByResource.class.getSimpleName()));
     }
     
     private boolean internalEquals(Object us, Object other) {

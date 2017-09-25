@@ -126,7 +126,7 @@ public final class StoreBox extends StoreBoxSE {
             return (T) Proxy.newProxyInstance(
                     cls.getClassLoader(),
                     new Class[]{cls},
-                    new StoreBoxInvocationHandler(
+                    new AndroidStoreBoxInvocationHandler(
                             engine,
                             cls,
                             saveMode));
