@@ -61,6 +61,8 @@ public class StoreBoxSE {
         public Builder(StoreEngine engine, Class<T> cls) {
             this.engine = engine;
             this.cls = cls;
+
+            readAnnotations();
         }
 
         public Builder saveMode(SaveMode value) {
@@ -92,7 +94,6 @@ public class StoreBoxSE {
         }
         
         protected void validate() {
-            readAnnotations();
             if (engine == null) {
                 throw new IllegalArgumentException(
                         "Engine cannot be null");
@@ -106,4 +107,5 @@ public class StoreBoxSE {
             }
         }
     }
+
 }

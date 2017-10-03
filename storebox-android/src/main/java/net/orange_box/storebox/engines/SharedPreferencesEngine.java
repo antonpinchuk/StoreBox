@@ -3,7 +3,6 @@ package net.orange_box.storebox.engines;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.TypedValue;
 
 import net.orange_box.storebox.StoreEngine;
@@ -16,10 +15,6 @@ import java.util.Set;
  * Android SharedPreferences as storage engine
  */
 public class SharedPreferencesEngine implements StoreEngine {
-
-    public SharedPreferences getPrefs() {
-        return prefs;
-    }
 
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
@@ -170,6 +165,10 @@ public class SharedPreferencesEngine implements StoreEngine {
         } else if (mode == SaveMode.COMMIT) {
             editor.commit();
         }
+    }
+
+    public SharedPreferences getPrefs() {
+        return prefs;
     }
 
 }

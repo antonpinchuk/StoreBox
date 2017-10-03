@@ -34,6 +34,7 @@ import net.orange_box.storebox.utils.PreferenceUtils;
 import net.orange_box.storebox.utils.TypeUtils;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -126,8 +127,24 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 return toString();
             }
 
-            forwardMethod(engine, method, args);
-            return null;
+            try {
+                return forwardMethod(engine, method, args);
+            } catch (NoSuchMethodException e) {
+                // NOP
+            } catch (InvocationTargetException e) {
+                throw e;
+            } catch (IllegalAccessException e) {
+                throw e;
+            }
+
+            // fail fast, rather than ignoring the method invocation
+            throw new UnsupportedOperationException(String.format(
+                    Locale.ENGLISH,
+                    "Failed to invoke %1$s method, " +
+                            "perhaps the %2$s or %3$s annotation is missing?",
+                    method.getName(),
+                    KeyByString.class.getSimpleName(),
+                    KeyByResource.class.getSimpleName()));
         }
 
         // method-level strategy > class-level strategy
@@ -208,16 +225,15 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         }
     }
 
-    public Object forwardMethod(StoreEngine engine, Method method, Object... arg) {
+    public Object forwardMethod(StoreEngine engine, Method method, Object... args)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
-        // fail fast, rather than ignoring the method invocation
-        throw new UnsupportedOperationException(String.format(
-                Locale.ENGLISH,
-                "Failed to invoke %1$s method, " +
-                        "perhaps the %2$s or %3$s annotation is missing?",
+        // can we forward the method to the Engine?
+        final Method prefsMethod = cls.getDeclaredMethod(
                 method.getName(),
-                KeyByString.class.getSimpleName(),
-                KeyByResource.class.getSimpleName()));
+                method.getParameterTypes());
+
+        return prefsMethod.invoke(engine, args);
     }
     
     private boolean internalEquals(Object us, Object other) {

@@ -15,13 +15,14 @@ public class AndroidStoreBoxInvocationHandler extends StoreBoxInvocationHandler 
     }
 
     @Override
-    public Object forwardMethod(StoreEngine engine, Method method, Object... args) {
+    public Object forwardMethod(StoreEngine engine, Method method, Object... args)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         SharedPreferencesEngine mEngine = (SharedPreferencesEngine) engine;
         SharedPreferences prefs = mEngine.getPrefs();
         SharedPreferences.Editor editor = prefs.edit();
 
-        // can we forward the method to the Engine?
+        // can we forward the method to the SharedPreferences?
         try {
             final Method prefsMethod = prefs.getClass().getDeclaredMethod(
                     method.getName(),
@@ -29,28 +30,30 @@ public class AndroidStoreBoxInvocationHandler extends StoreBoxInvocationHandler 
 
             return prefsMethod.invoke(prefs, args);
         } catch (NoSuchMethodException e) {
-            // NOP
+            throw e;
         } catch (InvocationTargetException e) {
-            // NOP
+            throw e;
         } catch (IllegalAccessException e) {
-            // NOP
+            throw e;
+        } finally {
+            // can we forward the method to the SharedPreferences.Editor?
+            try {
+                final Method editorMethod = editor.getClass().getDeclaredMethod(
+                        method.getName(),
+                        method.getParameterTypes());
+
+                return editorMethod.invoke(editor, args);
+            } catch (NoSuchMethodException e) {
+                throw e;
+            } catch (InvocationTargetException e) {
+                throw e;
+            } catch (IllegalAccessException e) {
+                throw e;
+            } finally {
+                // Parent forward
+                return super.forwardMethod(engine, method, args);
+            }
         }
-
-        // can we forward the method to the Editor?
-        try {
-            final Method editorMethod = editor.getClass().getDeclaredMethod(
-                    method.getName(),
-                    method.getParameterTypes());
-
-            return editorMethod.invoke(editor, args);
-        } catch (NoSuchMethodException e) {
-            // NOP
-        } catch (InvocationTargetException e) {
-            // NOP
-        } catch (IllegalAccessException e) {
-            // NOP
-        }
-
-        return super.forwardMethod(engine, method, args);
     }
+
 }
