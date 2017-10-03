@@ -30,30 +30,30 @@ public class AndroidStoreBoxInvocationHandler extends StoreBoxInvocationHandler 
 
             return prefsMethod.invoke(prefs, args);
         } catch (NoSuchMethodException e) {
-            throw e;
+            // NOP
         } catch (InvocationTargetException e) {
-            throw e;
+            // NOP
         } catch (IllegalAccessException e) {
-            throw e;
-        } finally {
-            // can we forward the method to the SharedPreferences.Editor?
-            try {
-                final Method editorMethod = editor.getClass().getDeclaredMethod(
-                        method.getName(),
-                        method.getParameterTypes());
-
-                return editorMethod.invoke(editor, args);
-            } catch (NoSuchMethodException e) {
-                throw e;
-            } catch (InvocationTargetException e) {
-                throw e;
-            } catch (IllegalAccessException e) {
-                throw e;
-            } finally {
-                // Parent forward
-                return super.forwardMethod(engine, method, args);
-            }
+            // NOP
         }
+
+        // can we forward the method to the SharedPreferences.Editor?
+        try {
+            final Method editorMethod = editor.getClass().getDeclaredMethod(
+                    method.getName(),
+                    method.getParameterTypes());
+
+            return editorMethod.invoke(editor, args);
+        } catch (NoSuchMethodException e) {
+            // NOP
+        } catch (InvocationTargetException e) {
+            // NOP
+        } catch (IllegalAccessException e) {
+            // NOP
+        }
+
+        // Parent forward
+        return super.forwardMethod(engine, method, args);
     }
 
 }
