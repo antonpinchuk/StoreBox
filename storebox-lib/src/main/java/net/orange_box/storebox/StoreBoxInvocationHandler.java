@@ -215,14 +215,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
 
         //PreferenceUtils.saveChanges(engine, mode);
 
-        // allow chaining if appropriate
-        if (returnType == method.getDeclaringClass()) {
-            return proxy;
-        } else if (returnType == cls) {
-            return engine;
-        } else {
-            return null;
-        }
+       return chainingMethod(engine, method, returnType, cls, proxy);
     }
 
     public Object forwardMethod(StoreEngine engine, Method method, Object... args)
@@ -235,7 +228,18 @@ class StoreBoxInvocationHandler implements InvocationHandler {
 
         return prefsMethod.invoke(engine, args);
     }
-    
+
+    public Object chainingMethod(StoreEngine engine, Method method, Class<?> returnType, Class cls, Object proxy) {
+        // allow chaining if appropriate
+        if (returnType == method.getDeclaringClass()) {
+            return proxy;
+        } else if (returnType == cls) {
+            return engine;
+        } else {
+            return null;
+        }
+    }
+
     private boolean internalEquals(Object us, Object other) {
         if (other == null) {
             return false;

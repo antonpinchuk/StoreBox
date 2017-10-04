@@ -10,17 +10,19 @@ import java.lang.reflect.Method;
 
 public class AndroidStoreBoxInvocationHandler extends StoreBoxInvocationHandler {
 
+    private final SharedPreferences prefs;
+    private final SharedPreferences.Editor editor;
+
     public AndroidStoreBoxInvocationHandler(StoreEngine engine, Class cls, SaveMode saveMode) {
         super(engine, cls, saveMode);
+
+        prefs = ((SharedPreferencesEngine) engine).getPrefs();
+        editor = prefs.edit();
     }
 
     @Override
     public Object forwardMethod(StoreEngine engine, Method method, Object... args)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-
-        SharedPreferencesEngine mEngine = (SharedPreferencesEngine) engine;
-        SharedPreferences prefs = mEngine.getPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
 
         // can we forward the method to the SharedPreferences?
         try {
@@ -46,4 +48,13 @@ public class AndroidStoreBoxInvocationHandler extends StoreBoxInvocationHandler 
         return super.forwardMethod(engine, method, args);
     }
 
+    @Override
+    public Object chainingMethod(StoreEngine engine, Method method, Class<?> returnType, Class cls, Object proxy) {
+        if (returnType == SharedPreferences.Editor.class) {
+            return editor;
+        } else {
+            // Parent chaining
+            return super.chainingMethod(engine, method, returnType, cls, proxy);
+        }
+    }
 }
