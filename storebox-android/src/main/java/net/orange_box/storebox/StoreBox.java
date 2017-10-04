@@ -77,6 +77,8 @@ public final class StoreBox extends StoreBoxSE {
         public Builder(Context context, Class<T> cls) {
             super(new SharedPreferencesEngine(context), cls);
             this.context = context;
+
+            readAnnotations();
         }
 
         public Builder preferencesType(PreferencesType value) {
