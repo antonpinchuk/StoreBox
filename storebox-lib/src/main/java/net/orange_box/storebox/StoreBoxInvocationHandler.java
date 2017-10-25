@@ -173,44 +173,45 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                         || returnType == cls) {
             setMethod(method, key, mode, args);
 
-
         } else {
             try {
-            /*
-             * Get.
-             * 
-             * We wrap any primitive types to their boxed equivalents as this
-             * makes further operations a bit nicer.
-             */
-                final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
-                        TypeUtils.wrapToBoxedType(method.getReturnType()),
-                        method.getAnnotation(TypeAdapter.class));
-
-                final Object defValue = getDefaultValueArg(
-                        method,
-                        args);
-
-                final Object value = PreferenceUtils.getValue(
-                        engine,
-                        key,
-                        adapter.getStoreType(),
-                        (defValue == null)
-                                ? adapter.getDefaultValue()
-                                : adapter.adaptForPreferences(defValue));
-
-                return adapter.adaptFromPreferences(value);
-            } catch (Exception e) {
+                return getMethod(method, key, args);
+            } catch (UnsupportedOperationException e) {
+                throw e;
+            } catch (RuntimeException e) {
                 setMethod(method, key, mode, args);
             }
-
         }
-
         //PreferenceUtils.saveChanges(engine, mode);
-
         return chainingMethod(engine, method, returnType, cls, proxy);
     }
 
-    private void setMethod(Method method, String key, SaveMode mode, Object[] args) {
+    /*
+     * Get.
+     *
+     * We wrap any primitive types to their boxed equivalents as this
+     * makes further operations a bit nicer.
+     */
+    private Object getMethod(Method method, String key, Object[] args) {
+        final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
+                TypeUtils.wrapToBoxedType(method.getReturnType()),
+                method.getAnnotation(TypeAdapter.class));
+
+        final Object defValue = getDefaultValueArg(
+                method,
+                args);
+
+        final Object value = PreferenceUtils.getValue(
+                engine,
+                key,
+                adapter.getStoreType(),
+                (defValue == null)
+                        ? adapter.getDefaultValue()
+                        : adapter.adaptForPreferences(defValue));
+
+        return adapter.adaptFromPreferences(value);
+    }
+
     /*
      * Set.
      *
@@ -218,6 +219,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
      * variant and we also need to find out what type to store the
      * value under,
      */
+    private void setMethod(Method method, String key, SaveMode mode, Object[] args) {
         final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
                 MethodUtils.getValueParameterType(method),
                 method.getAnnotation(TypeAdapter.class));
