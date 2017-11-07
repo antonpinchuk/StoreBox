@@ -49,12 +49,22 @@ public class AndroidStoreBoxInvocationHandler extends StoreBoxInvocationHandler 
     }
 
     @Override
-    public Object chainingMethod(StoreEngine engine, Method method, Class<?> returnType, Class cls, Object proxy) {
+    public Object chainingMethod(Object proxy, Method method, Class<?> returnType) {
         if (returnType == SharedPreferences.Editor.class) {
             return editor;
         } else {
             // Parent chaining
-            return super.chainingMethod(engine, method, returnType, cls, proxy);
+            return super.chainingMethod(proxy, method, returnType);
+        }
+    }
+
+    @Override
+    public boolean isEditorType(Class<?> returnType) {
+        if (returnType == SharedPreferences.Editor.class) {
+            return true;
+        } else {
+            // Parent chaining
+            return super.isEditorType(returnType);
         }
     }
 }

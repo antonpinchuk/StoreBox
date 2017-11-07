@@ -51,28 +51,28 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             MethodUtils.getObjectMethod("hashCode");
     private static final Method OBJECT_TOSTRING =
             MethodUtils.getObjectMethod("toString");
-    
+
     private final StoreEngine engine;
     private final Class cls;
 
     private final SaveMode saveMode;
-    
+
     private final MethodHandler mChangesHandler;
-    
+
     private int hashCode;
-    
+
     public StoreBoxInvocationHandler(
             StoreEngine engine,
             Class cls,
             SaveMode saveMode) {
-        
+
         this.engine = engine;
         this.cls = cls;
         this.saveMode = saveMode;
-        
+
         mChangesHandler = new ChangeListenerMethodHandler(engine);
     }
-    
+
     @Override
     public Object invoke(
             Object proxy, Method method, Object... args) throws Throwable {
@@ -88,7 +88,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         final boolean isChange;
         if (method.isAnnotationPresent(KeyByString.class)) {
             key = method.getAnnotation(KeyByString.class).value();
-            
+
             isRemove = method.isAnnotationPresent(RemoveMethod.class);
             isClear = false;
             isChange = MethodUtils.areAnyAnnotationsPresent(
@@ -98,7 +98,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         } else if (method.isAnnotationPresent(KeyByResource.class)) {
             key = (String) engine.getResourceString(
                     method.getAnnotation(KeyByResource.class).value());
-            
+
             isRemove = method.isAnnotationPresent(RemoveMethod.class);
             isClear = false;
             isChange = MethodUtils.areAnyAnnotationsPresent(
@@ -107,13 +107,13 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     UnregisterChangeListenerMethod.class);
         } else if (method.isAnnotationPresent(RemoveMethod.class)) {
             key = MethodUtils.getKeyForRemove(engine, args);
-            
+
             isRemove = true;
             isClear = false;
             isChange = false;
         } else if (method.isAnnotationPresent(ClearMethod.class)) {
             key = null;
-            
+
             isRemove = false;
             isClear = true;
             isChange = false;
@@ -170,64 +170,68 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         } else if (
                 returnType == Void.TYPE
                         || returnType == method.getDeclaringClass()
-                        || returnType == cls) {
-            setMethod(method, key, mode, args);
+                        || returnType == cls || isEditorType(returnType)) {
 
+            /*
+             * Set.
+             *
+             * Argument types are boxed for us, so we only need to check one
+             * variant and we also need to find out what type to store the
+             * value under,
+             */
+            final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
+                    MethodUtils.getValueParameterType(method),
+                    method.getAnnotation(TypeAdapter.class));
+            final Object value = adapter.adaptForPreferences(
+                    MethodUtils.getValueArg(args));
+
+            PreferenceUtils.putValue(
+                    engine, key, adapter.getStoreType(), value, mode);
         } else {
-            try {
-                return getMethod(method, key, args);
-            } catch (UnsupportedOperationException e) {
-                throw e;
-            } catch (RuntimeException e) {
-                setMethod(method, key, mode, args);
-            }
+            /*
+             * Get.
+             *
+             * We wrap any primitive types to their boxed equivalents as this
+             * makes further operations a bit nicer.
+             */
+            final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
+                    TypeUtils.wrapToBoxedType(method.getReturnType()),
+                    method.getAnnotation(TypeAdapter.class));
+
+            final Object defValue = getDefaultValueArg(
+                    method,
+                    args);
+
+            final Object value = PreferenceUtils.getValue(
+                    engine,
+                    key,
+                    adapter.getStoreType(),
+                    (defValue == null)
+                            ? adapter.getDefaultValue()
+                            : adapter.adaptForPreferences(defValue));
+
+            return adapter.adaptFromPreferences(value);
         }
+
         //PreferenceUtils.saveChanges(engine, mode);
-        return chainingMethod(engine, method, returnType, cls, proxy);
+        return chainingMethod(proxy, method, returnType);
+
+
     }
 
-    /*
-     * Get.
-     *
-     * We wrap any primitive types to their boxed equivalents as this
-     * makes further operations a bit nicer.
-     */
-    private Object getMethod(Method method, String key, Object[] args) {
-        final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
-                TypeUtils.wrapToBoxedType(method.getReturnType()),
-                method.getAnnotation(TypeAdapter.class));
-
-        final Object defValue = getDefaultValueArg(
-                method,
-                args);
-
-        final Object value = PreferenceUtils.getValue(
-                engine,
-                key,
-                adapter.getStoreType(),
-                (defValue == null)
-                        ? adapter.getDefaultValue()
-                        : adapter.adaptForPreferences(defValue));
-
-        return adapter.adaptFromPreferences(value);
+    public boolean isEditorType(Class<?> returnType) {
+        return false;
     }
 
-    /*
-     * Set.
-     *
-     * Argument types are boxed for us, so we only need to check one
-     * variant and we also need to find out what type to store the
-     * value under,
-     */
-    private void setMethod(Method method, String key, SaveMode mode, Object[] args) {
-        final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
-                MethodUtils.getValueParameterType(method),
-                method.getAnnotation(TypeAdapter.class));
-        final Object value = adapter.adaptForPreferences(
-                MethodUtils.getValueArg(args));
-
-        PreferenceUtils.putValue(
-                engine, key, adapter.getStoreType(), value, mode);
+    public Object chainingMethod(Object proxy, Method method, Class<?> returnType) {
+        // allow chaining if appropriate
+        if (returnType == method.getDeclaringClass()) {
+            return proxy;
+        } else if (returnType == cls) {
+            return engine;
+        } else {
+            return null;
+        }
     }
 
     public Object forwardMethod(StoreEngine engine, Method method, Object... args)
@@ -239,17 +243,6 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 method.getParameterTypes());
 
         return prefsMethod.invoke(engine, args);
-    }
-
-    public Object chainingMethod(StoreEngine engine, Method method, Class<?> returnType, Class cls, Object proxy) {
-        // allow chaining if appropriate
-        if (returnType == method.getDeclaringClass()) {
-            return proxy;
-        } else if (returnType == cls) {
-            return engine;
-        } else {
-            return null;
-        }
     }
 
     private boolean internalEquals(Object us, Object other) {
@@ -266,23 +259,23 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 && (us == other);
 
     }
-    
+
     private int internalHashCode() {
         if (hashCode == 0) {
             hashCode = Arrays.hashCode(new Object[] {
                     engine, saveMode});
         }
-        
+
         return hashCode;
     }
-    
+
     private Object getDefaultValueArg(
             Method method,
             Object... args) {
-        
+
         Object result = null;
         final Class<?> type = TypeUtils.wrapToBoxedType(method.getReturnType());
-        
+
         // parameter default > method-level default
         if (args != null && args.length > 0) {
             result = args[0];
@@ -316,7 +309,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 result = new Object(); // we'll fail later
             }
         }
-        
+
         // default was not provided so let's see how we should create it
         if (result == null) {
             return null;
