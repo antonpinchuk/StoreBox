@@ -170,7 +170,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         } else if (
                 returnType == Void.TYPE
                         || returnType == method.getDeclaringClass()
-                        || returnType == cls || isEditorType(returnType)) {
+                        || returnType == cls || isInvokeChain(returnType)) {
 
             /*
              * Set.
@@ -214,16 +214,23 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         }
 
         //PreferenceUtils.saveChanges(engine, mode);
-        return chainingMethod(proxy, method, returnType);
+        return invokeChain(proxy, method, returnType);
 
 
     }
 
-    public boolean isEditorType(Class<?> returnType) {
+    /**
+     * Override this to detect object for chaining
+     * @return true if returnType is chained
+     */
+    public boolean isInvokeChain(Class<?> returnType) {
         return false;
     }
 
-    public Object chainingMethod(Object proxy, Method method, Class<?> returnType) {
+    /**
+     * Override this to return custom object for chaining
+     */
+    public Object invokeChain(Object proxy, Method method, Class<?> returnType) {
         // allow chaining if appropriate
         if (returnType == method.getDeclaringClass()) {
             return proxy;
