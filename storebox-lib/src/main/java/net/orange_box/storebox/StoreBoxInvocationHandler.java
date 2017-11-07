@@ -234,8 +234,8 @@ class StoreBoxInvocationHandler implements InvocationHandler {
         // allow chaining if appropriate
         if (returnType == method.getDeclaringClass()) {
             return proxy;
-        } else if (returnType == cls) {
-            return engine;
+        //} else if (returnType == engine.getClass()) { // TODO: chain engine
+        //    return engine;
         } else {
             return null;
         }
