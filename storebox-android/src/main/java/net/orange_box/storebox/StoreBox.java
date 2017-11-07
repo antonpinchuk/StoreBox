@@ -77,8 +77,7 @@ public final class StoreBox extends StoreBoxSE {
         public Builder(Context context, Class<T> cls) {
             super(new SharedPreferencesEngine(context), cls);
             this.context = context;
-
-            readAnnotations();
+            readPrefsAnnotations();
         }
 
         public Builder preferencesType(PreferencesType value) {
@@ -134,10 +133,7 @@ public final class StoreBox extends StoreBoxSE {
                             saveMode));
         }
         
-        @Override
-        protected void readAnnotations() {
-            super.readAnnotations();
-
+        protected void readPrefsAnnotations() {
             // type/mode option
             if (cls.isAnnotationPresent(DefaultSharedPreferences.class)) {
                 preferencesType(PreferencesType.DEFAULT_SHARED);
