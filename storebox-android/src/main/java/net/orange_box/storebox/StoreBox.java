@@ -77,6 +77,7 @@ public final class StoreBox extends StoreBoxSE {
         public Builder(Context context, Class<T> cls) {
             super(new SharedPreferencesEngine(context), cls);
             this.context = context;
+            readPrefsAnnotations();
         }
 
         public Builder preferencesType(PreferencesType value) {
@@ -126,16 +127,13 @@ public final class StoreBox extends StoreBoxSE {
             return (T) Proxy.newProxyInstance(
                     cls.getClassLoader(),
                     new Class[]{cls},
-                    new StoreBoxInvocationHandler(
+                    new AndroidStoreBoxInvocationHandler(
                             engine,
                             cls,
                             saveMode));
         }
         
-        @Override
-        protected void readAnnotations() {
-            super.readAnnotations();
-
+        protected void readPrefsAnnotations() {
             // type/mode option
             if (cls.isAnnotationPresent(DefaultSharedPreferences.class)) {
                 preferencesType(PreferencesType.DEFAULT_SHARED);

@@ -37,6 +37,7 @@ import net.orange_box.storebox.utils.TypeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -53,28 +54,28 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             MethodUtils.getObjectMethod("hashCode");
     private static final Method OBJECT_TOSTRING =
             MethodUtils.getObjectMethod("toString");
-    
+
     private final StoreEngine engine;
     private final Class cls;
 
     private final SaveMode saveMode;
-    
+
     private final MethodHandler mChangesHandler;
-    
+
     private int hashCode;
-    
+
     public StoreBoxInvocationHandler(
             StoreEngine engine,
             Class cls,
             SaveMode saveMode) {
-        
+
         this.engine = engine;
         this.cls = cls;
         this.saveMode = saveMode;
-        
+
         mChangesHandler = new ChangeListenerMethodHandler(engine);
     }
-    
+
     @Override
     public Object invoke(
             Object proxy, Method method, Object... args) throws Throwable {
@@ -144,18 +145,17 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             } else if (method.equals(OBJECT_TOSTRING)) {
                 return toString();
             }
-            
-            // can we forward the method to the Engine?
+
             try {
-                final Method prefsMethod = cls.getDeclaredMethod(
-                        method.getName(),
-                        method.getParameterTypes());
-                
-                return prefsMethod.invoke(engine, args);
+                return forwardMethod(engine, method, args);
             } catch (NoSuchMethodException e) {
                 // NOP
+            } catch (InvocationTargetException e) {
+                throw e;
+            } catch (IllegalAccessException e) {
+                throw e;
             }
-            
+
             // fail fast, rather than ignoring the method invocation
             throw new UnsupportedOperationException(String.format(
                     Locale.ENGLISH,
@@ -188,12 +188,12 @@ class StoreBoxInvocationHandler implements InvocationHandler {
             return mChangesHandler.handleInvocation(key, proxy, method, args);
         } else if (
                 returnType == Void.TYPE
-                || returnType == method.getDeclaringClass()
-                || returnType == cls) {
-            
+                        || returnType == method.getDeclaringClass()
+                        || returnType == cls || isInvokeChain(returnType)) {
+
             /*
              * Set.
-             * 
+             *
              * Argument types are boxed for us, so we only need to check one
              * variant and we also need to find out what type to store the
              * value under,
@@ -203,25 +203,25 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     method.getAnnotation(TypeAdapter.class));
             final Object value = adapter.adaptForPreferences(
                     MethodUtils.getValueArg(args));
-            
+
             PreferenceUtils.putValue(
                     engine, key, adapter.getStoreType(), value, mode);
         } else {
             /*
              * Get.
-             * 
+             *
              * We wrap any primitive types to their boxed equivalents as this
              * makes further operations a bit nicer.
              */
             final StoreBoxTypeAdapter adapter = TypeUtils.getTypeAdapter(
                     TypeUtils.wrapToBoxedType(method.getReturnType()),
                     method.getAnnotation(TypeAdapter.class));
-            
+
             final Object defValue = getDefaultValueArg(
                     method,
                     numberOfFormattedKeyArgs,
                     args);
-            
+
             final Object value = PreferenceUtils.getValue(
                     engine,
                     key,
@@ -229,22 +229,49 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                     (defValue == null)
                             ? adapter.getDefaultValue()
                             : adapter.adaptForPreferences(defValue));
-            
+
             return adapter.adaptFromPreferences(value);
         }
 
         //PreferenceUtils.saveChanges(engine, mode);
+        return invokeChain(proxy, method, returnType);
 
+
+    }
+
+    /**
+     * Override this to detect object for chaining
+     * @return true if returnType is chained
+     */
+    public boolean isInvokeChain(Class<?> returnType) {
+        return false;
+    }
+
+    /**
+     * Override this to return custom object for chaining
+     */
+    public Object invokeChain(Object proxy, Method method, Class<?> returnType) {
         // allow chaining if appropriate
         if (returnType == method.getDeclaringClass()) {
             return proxy;
-        } else if (returnType == cls) {
-            return engine;
+        //} else if (returnType == engine.getClass()) { // TODO: chain engine
+        //    return engine;
         } else {
             return null;
         }
     }
-    
+
+    public Object forwardMethod(StoreEngine engine, Method method, Object... args)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+
+        // can we forward the method to the Engine?
+        final Method prefsMethod = cls.getDeclaredMethod(
+                method.getName(),
+                method.getParameterTypes());
+
+        return prefsMethod.invoke(engine, args);
+    }
+
     private boolean internalEquals(Object us, Object other) {
         if (other == null) {
             return false;
@@ -259,24 +286,24 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 && (us == other);
 
     }
-    
+
     private int internalHashCode() {
         if (hashCode == 0) {
             hashCode = Arrays.hashCode(new Object[] {
                     engine, saveMode});
         }
-        
+
         return hashCode;
     }
-    
+
     private Object getDefaultValueArg(
             Method method,
             int numberOfFormattedKeyArgs,
             Object... args) {
-        
+
         Object result = null;
         final Class<?> type = TypeUtils.wrapToBoxedType(method.getReturnType());
-        
+
         // parameter default > method-level default
         if (args != null && args.length > numberOfFormattedKeyArgs) {
             result = args[args.length-1];
@@ -310,7 +337,7 @@ class StoreBoxInvocationHandler implements InvocationHandler {
                 result = new Object(); // we'll fail later
             }
         }
-        
+
         // default was not provided so let's see how we should create it
         if (result == null) {
             return null;
